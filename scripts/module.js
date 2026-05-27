@@ -19,7 +19,8 @@ Hooks.once('init', () => {
   initEffectConfig();
 
   // Pre-load all our Handlebars templates so they're cached and ready.
-  loadTemplates([
+  // loadTemplates() is deprecated in v14; use the namespaced version.
+  foundry.applications.handlebars.loadTemplates([
     `modules/${MODULE_ID}/templates/partials/keyword-input.hbs`,
     `modules/${MODULE_ID}/templates/effect-config.hbs`,
   ]);
