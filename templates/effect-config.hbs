@@ -31,10 +31,10 @@
     <label>{{localize "SDE.Effect.Operator.Label"}}</label>
     <div class="form-fields">
       <select name="sde-operator">
-        <option value="multiply" {{#eq operator "multiply"}}selected{{/eq}}>
+        <option value="multiply" {{#if (eq operator "multiply")}}selected{{/if}}>
           {{localize "SDE.Effect.Operator.Multiply"}}
         </option>
-        <option value="add" {{#eq operator "add"}}selected{{/eq}}>
+        <option value="add" {{#if (eq operator "add")}}selected{{/if}}>
           {{localize "SDE.Effect.Operator.Add"}}
         </option>
       </select>
