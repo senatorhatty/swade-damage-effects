@@ -26,14 +26,18 @@
 }
 
 /* ── Tab font — Active Effect config ─────────────────────────
-   SWADE item/actor sheets already style our tab via their own
-   CSS once we carry the "item" class on the link element.
-   The core Foundry ActiveEffectConfig sheet has no such rule,
-   so we apply the same Anton typeface here explicitly.         */
+   SWADE actor sheets (.swade-official) already get Special Elite
+   applied by illmet-tradecraft's override (it targets both .item
+   and [data-action=tab] on .swade-official .tabs).
+   SWADE item sheets (.swade-item-sheet) use Anton — our .item
+   class on the link is enough for that context.
+   The core Foundry ActiveEffectConfig floats outside both those
+   scopes, so we apply Special Elite here explicitly.
+   The font is loaded globally by illmet-tradecraft.            */
 
 .active-effect-config nav.sheet-tabs a[data-tab="sde-keywords"],
 .active-effect-config nav.sheet-tabs a[data-tab="sde-keywords"] span {
-  font-family: "Anton", "Signika", sans-serif;
+  font-family: 'Special Elite', 'Courier New', monospace;
 }
 
 /* ── Active Effect config tab ─────────────────────────────── */
