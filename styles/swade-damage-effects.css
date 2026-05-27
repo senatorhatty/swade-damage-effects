@@ -25,6 +25,17 @@
   color: var(--color-text-dark-secondary, #555);
 }
 
+/* ── Tab font — Active Effect config ─────────────────────────
+   SWADE item/actor sheets already style our tab via their own
+   CSS once we carry the "item" class on the link element.
+   The core Foundry ActiveEffectConfig sheet has no such rule,
+   so we apply the same Anton typeface here explicitly.         */
+
+.active-effect-config nav.sheet-tabs a[data-tab="sde-keywords"],
+.active-effect-config nav.sheet-tabs a[data-tab="sde-keywords"] span {
+  font-family: "Anton", "Signika", sans-serif;
+}
+
 /* ── Active Effect config tab ─────────────────────────────── */
 
 .sde-effect-tab {

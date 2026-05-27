@@ -38,16 +38,20 @@ async function _onRender(app, html, _context, _options) {
     data
   );
 
-  const nav  = html.querySelector('nav.sheet-tabs, .tabs[data-group]');
-  const body = html.querySelector('.sheet-body, .tab-content');
-  if (!nav || !body) {
-    console.warn(`${MODULE_ID} | Could not find nav or body on ActiveEffect config`);
+  // In Foundry v14, ActiveEffectConfig uses AppV2 PARTS-based rendering.
+  // The tab nav is rendered as <nav class="sheet-tabs ..."> (the "tabs" part).
+  // Tab sections are direct children of .window-content — there is no .sheet-body wrapper.
+  const nav = html.querySelector('nav.sheet-tabs');
+  if (!nav) {
+    console.warn(`${MODULE_ID} | Could not find tab nav on ActiveEffect config`);
     return;
   }
 
   const group = nav.querySelector('[data-tab]')?.dataset.group ?? 'sheet';
 
   // ── Tab nav entry ───────────────────────────────────────────────────────────
+  // Remove stale link in case the "tabs" part was re-rendered since last injection.
+  nav.querySelector('[data-tab="sde-keywords"]')?.remove();
   const link = document.createElement('a');
   link.dataset.action  = 'tab';
   link.dataset.group   = group;
@@ -57,23 +61,38 @@ async function _onRender(app, html, _context, _options) {
   nav.appendChild(link);
 
   // ── Tab panel ───────────────────────────────────────────────────────────────
-  const panel = document.createElement('section');
-  panel.className       = 'tab';
-  panel.dataset.group   = group;
-  panel.dataset.tab     = 'sde-keywords';
-  panel.innerHTML       = rendered;
-  body.appendChild(panel);
+  // In AppV2 PARTS layout the tab sections are siblings in .window-content.
+  // Inject our panel just before the footer part so it sits alongside the
+  // core details/duration/changes sections.
+  const footer    = html.querySelector('[data-application-part="footer"]');
+  const container = footer?.parentElement
+    ?? html.querySelector('.window-content')
+    ?? html;
+
+  // Skip re-injecting the panel if it survived the last partial re-render.
+  let panel = container.querySelector('section[data-tab="sde-keywords"]');
+  if (!panel) {
+    panel = document.createElement('section');
+    panel.className     = 'tab';
+    panel.dataset.group = group;
+    panel.dataset.tab   = 'sde-keywords';
+    panel.innerHTML     = rendered;
+
+    if (footer) container.insertBefore(panel, footer);
+    else        container.appendChild(panel);
+
+    // Save on any change within our panel so data isn't lost on close.
+    panel.addEventListener('change', async () => {
+      await _saveFlags(effect, panel);
+    });
+  }
 
   // ── Save when the form submits ──────────────────────────────────────────────
-  html.querySelector('form')?.addEventListener('submit', async () => {
+  // html IS the <form> element for ActiveEffectConfig (tag: "form" in AppV2).
+  const form = html.matches?.('form') ? html : html.querySelector('form');
+  form?.addEventListener('submit', async () => {
     await _saveFlags(effect, panel);
-  });
-
-  // Also save immediately on any change within our panel so data
-  // isn't lost if the user closes without hitting Save.
-  panel.addEventListener('change', async () => {
-    await _saveFlags(effect, panel);
-  });
+  }, { once: true });
 }
 
 async function _saveFlags(effect, panel) {

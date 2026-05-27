@@ -44,7 +44,11 @@ async function _onRender(app, html, _context, _options) {
   // ── Tab nav entry ───────────────────────────────────────────────────────────
   // data-action="tab" is picked up by AppV2's built-in event delegation,
   // so tab switching works without any extra JS from us.
+  // SWADE's tab CSS targets the class "item" on tab links (cssClass: "item" in
+  // its TABS config).  Adding it here lets our tab inherit the Anton/Signika
+  // font and rounded-corner box-shadow styling without any extra CSS rules.
   const link = document.createElement('a');
+  link.className       = 'item';
   link.dataset.action  = 'tab';
   link.dataset.group   = group;
   link.dataset.tab     = 'sde-keywords';
