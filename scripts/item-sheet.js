@@ -64,6 +64,16 @@ async function _onRender(app, html, _context, _options) {
   panel.innerHTML       = rendered;
   body.appendChild(panel);
 
+  // Because renderTemplate is async, Foundry's tab-switch code may have already
+  // run and tried (and failed) to activate our panel before it existed in the DOM.
+  // Restore the active state now if that happened.
+  // AppV2 stores the active tab in tabGroups; AppV1 sheets store it in _tabs[].active.
+  const activeTab = app.tabGroups?.[group] ?? app._tabs?.[0]?.active;
+  if (activeTab === 'sde-keywords') {
+    panel.classList.add('active');
+    link.classList.add('active');
+  }
+
   // ── Save on change ──────────────────────────────────────────────────────────
   panel.querySelector('.sde-keywords-input')?.addEventListener('change', async (e) => {
     await item.setFlag(MODULE_ID, 'keywords', e.currentTarget.value.trim());

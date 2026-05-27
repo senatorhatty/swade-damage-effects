@@ -81,6 +81,14 @@ async function _onRender(app, html, _context, _options) {
     if (footer) container.insertBefore(panel, footer);
     else        container.appendChild(panel);
 
+    // If Foundry's tab-switch code fired while we were awaiting renderTemplate,
+    // our panel didn't exist yet and won't have been activated.  Fix that now.
+    const activeTab = app.tabGroups?.[group] ?? app._tabs?.[0]?.active;
+    if (activeTab === 'sde-keywords') {
+      panel.classList.add('active');
+      link.classList.add('active');
+    }
+
     // Save on any change within our panel so data isn't lost on close.
     panel.addEventListener('change', async () => {
       await _saveFlags(effect, panel);
