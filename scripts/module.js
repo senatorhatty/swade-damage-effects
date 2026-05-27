@@ -26,5 +26,9 @@ Hooks.once('init', () => {
 });
 
 Hooks.once('ready', () => {
-  console.log(`${MODULE_ID} | Ready — Foundry ${game.version}, SWADE ${game.system.version}`);
+  console.log(`${MODULE_ID} | Ready — Foundry v${game.version}, SWADE ${game.system.version}`);
+
+  if (game.system.id !== 'swade') {
+    console.warn(`${MODULE_ID} | This module requires the SWADE system.`);
+  }
 });

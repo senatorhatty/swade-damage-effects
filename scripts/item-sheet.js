@@ -1,110 +1,67 @@
 /**
  * item-sheet.js
- * Adds a "Keywords" tab to SWADE item sheets.
+ * Adds a "Keywords" tab to SWADE item sheets (Foundry v14 / SWADE 6+).
  *
- * We inject a full new tab rather than trying to append to an existing one,
- * which avoids fragile selector guessing and gives the field its own clean space.
+ * Foundry v14 uses AppV2 exclusively. The correct hook is renderSwadeItemSheetV2,
+ * which passes a plain HTMLElement (not jQuery). AppV2's built-in data-action="tab"
+ * handler manages tab switching automatically once our tab is in the DOM.
  *
- * Keywords are stored in item flags so we never touch the system's data schema:
- *   item.flags["swade-damage-effects"].keywords  (plain comma-separated string)
+ * Keywords stored in flags — never touches the system data schema:
+ *   item.flags["swade-damage-effects"].keywords  (comma-separated string)
  */
 
 const MODULE_ID = 'swade-damage-effects';
 
-// Item types that deal damage and should carry keyword tags.
 const KEYWORD_TYPES = new Set(['weapon', 'power', 'gear', 'shield', 'consumable']);
 
 export function initItemSheet() {
-  Hooks.on('renderItemSheet', _onRenderItemSheet);
+  Hooks.on('renderSwadeItemSheetV2', _onRender);
 }
 
-async function _onRenderItemSheet(sheet, html, _data) {
-  // Support both AppV2 (sheet.document) and AppV1 (sheet.item).
-  const item = sheet.document ?? sheet.item;
-
-  console.log(`${MODULE_ID} | renderItemSheet fired`, {
-    sheetClass: sheet.constructor.name,
-    itemType: item?.type,
-    htmlType: html?.constructor?.name,
-  });
-
-  if (!item) return;
-  if (!KEYWORD_TYPES.has(item.type)) {
-    console.log(`${MODULE_ID} | skipping item type: ${item.type}`);
-    return;
-  }
+async function _onRender(app, html, _context, _options) {
+  const item = app.document;
+  if (!item || !KEYWORD_TYPES.has(item.type)) return;
 
   const keywords = item.getFlag(MODULE_ID, 'keywords') ?? '';
-  const editable  = sheet.isEditable;
+  const editable  = app.isEditable;
 
   const rendered = await renderTemplate(
     `modules/${MODULE_ID}/templates/partials/keyword-input.hbs`,
     { keywords, editable }
   );
 
-  // Normalise to jQuery — AppV2 passes a plain HTMLElement.
-  const $html = (html instanceof jQuery) ? html : $(html);
-
-  // ── 1. Find the tab nav and read the data-group from existing tabs ──────
-  const $nav = $html.find('nav.sheet-tabs, nav.tabs').first();
-
-  console.log(`${MODULE_ID} | nav found:`, $nav.length, '| html outerHTML snippet:', $html[0]?.outerHTML?.slice(0, 200));
-
-  if (!$nav.length) {
-    // No tab nav found — fall back to appending directly to the form.
-    console.log(`${MODULE_ID} | no nav — falling back to form append`);
-    $html.find('form').append(rendered);
-    _wireChangeHandler($html, item);
+  // html is a plain HTMLElement in v14 — no jQuery needed.
+  const nav  = html.querySelector('nav.sheet-tabs');
+  const body = html.querySelector('.sheet-body');
+  if (!nav || !body) {
+    console.warn(`${MODULE_ID} | Could not find nav or body on ${item.name}`);
     return;
   }
 
-  // Get the group name from the first existing tab anchor.
-  const group = $nav.find('[data-tab]').first().attr('data-group') ?? 'primary';
+  // Read the tab group name from whatever tab already exists.
+  const group = nav.querySelector('[data-tab]')?.dataset.group ?? 'main';
 
-  // ── 2. Inject the tab nav entry ─────────────────────────────────────────
-  $nav.append(`
-    <a data-action="tab"
-       data-group="${group}"
-       data-tab="sde-keywords"
-       data-tooltip="${game.i18n.localize('SDE.Keywords.Label')}">
-      <i class="fas fa-tags" inert></i>
-      <span>${game.i18n.localize('SDE.Keywords.Label')}</span>
-    </a>
-  `);
+  // ── Tab nav entry ───────────────────────────────────────────────────────────
+  // data-action="tab" is picked up by AppV2's built-in event delegation,
+  // so tab switching works without any extra JS from us.
+  const link = document.createElement('a');
+  link.dataset.action  = 'tab';
+  link.dataset.group   = group;
+  link.dataset.tab     = 'sde-keywords';
+  link.dataset.tooltip = game.i18n.localize('SDE.Keywords.Label');
+  link.innerHTML = `<i class="fas fa-tags" inert></i><span>${game.i18n.localize('SDE.Keywords.Label')}</span>`;
+  nav.appendChild(link);
 
-  // ── 3. Inject the tab panel ─────────────────────────────────────────────
-  const $body = $html.find('.sheet-body').first();
-  $body.append(`
-    <section class="tab sde-keywords-tab"
-             data-group="${group}"
-             data-tab="sde-keywords">
-      ${rendered}
-    </section>
-  `);
+  // ── Tab panel ───────────────────────────────────────────────────────────────
+  const panel = document.createElement('section');
+  panel.className       = 'tab';
+  panel.dataset.group   = group;
+  panel.dataset.tab     = 'sde-keywords';
+  panel.innerHTML       = rendered;
+  body.appendChild(panel);
 
-  // ── 4. Wire up tab switching ────────────────────────────────────────────
-  // Foundry's Tabs instance was already initialised before we injected,
-  // so we handle clicks on our tab manually.
-  $nav.find('[data-tab="sde-keywords"]').on('click', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Deactivate every tab in this group.
-    $nav.find(`[data-group="${group}"]`).removeClass('active');
-    $body.find(`.tab[data-group="${group}"]`).removeClass('active');
-
-    // Activate ours.
-    $(this).addClass('active');
-    $body.find('.tab[data-tab="sde-keywords"]').addClass('active');
-  });
-
-  // ── 5. Save on change ───────────────────────────────────────────────────
-  _wireChangeHandler($html, item);
-}
-
-function _wireChangeHandler($html, item) {
-  $html.find('.sde-keywords-input').on('change', async (event) => {
-    const value = event.currentTarget.value.trim();
-    await item.setFlag(MODULE_ID, 'keywords', value);
+  // ── Save on change ──────────────────────────────────────────────────────────
+  panel.querySelector('.sde-keywords-input')?.addEventListener('change', async (e) => {
+    await item.setFlag(MODULE_ID, 'keywords', e.currentTarget.value.trim());
   });
 }

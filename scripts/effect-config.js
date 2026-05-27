@@ -1,27 +1,28 @@
 /**
  * effect-config.js
- * Injects a "Damage Keywords" tab into the standard ActiveEffect config sheet.
+ * Adds a "Damage Keywords" tab to the ActiveEffect config sheet (Foundry v14).
  *
- * We store the keyword-effect data entirely in flags so we don't conflict
- * with Foundry's or SWADE's built-in active effect handling.
+ * In v14, ActiveEffectConfig extends HandlebarsApplicationMixin(DocumentSheetV2).
+ * Hook: renderActiveEffectConfig  — html is a plain HTMLElement.
+ * Tab group: "sheet"  (tabs: details, duration, changes — we add sde-keywords).
  *
  * Flag shape on each ActiveEffect:
  *   flags["swade-damage-effects"] = {
- *     enabled:   boolean  – whether this effect participates in keyword matching
- *     condition: string   – keyword condition string (see keywords.js for syntax)
+ *     enabled:   boolean
+ *     condition: string   — keyword condition (see keywords.js for syntax)
  *     operator:  "multiply" | "add"
- *     value:     number   – multiplier or addend
+ *     value:     number
  *   }
  */
 
 const MODULE_ID = 'swade-damage-effects';
 
 export function initEffectConfig() {
-  Hooks.on('renderActiveEffectConfig', _onRenderActiveEffectConfig);
+  Hooks.on('renderActiveEffectConfig', _onRender);
 }
 
-async function _onRenderActiveEffectConfig(sheet, html, _data) {
-  const effect = sheet.document ?? sheet.object;
+async function _onRender(app, html, _context, _options) {
+  const effect = app.document;
   if (!effect) return;
 
   const flags = effect.flags?.[MODULE_ID] ?? {};
@@ -37,52 +38,49 @@ async function _onRenderActiveEffectConfig(sheet, html, _data) {
     data
   );
 
-  const $html = (html instanceof jQuery) ? html : $(html);
-
-  // The AE config sheet has a tab strip — add our tab to it.
-  const $nav = $html.find('nav.sheet-tabs');
-  if ($nav.length) {
-    $nav.append(
-      `<a class="item" data-tab="sde-keywords">
-        <i class="fas fa-tags"></i>
-        ${game.i18n.localize('SDE.Effect.TabLabel')}
-      </a>`
-    );
+  const nav  = html.querySelector('nav.sheet-tabs, .tabs[data-group]');
+  const body = html.querySelector('.sheet-body, .tab-content');
+  if (!nav || !body) {
+    console.warn(`${MODULE_ID} | Could not find nav or body on ActiveEffect config`);
+    return;
   }
 
-  // Append the tab panel.
-  const $body = $html.find('.sheet-body');
-  $body.append(rendered);
+  const group = nav.querySelector('[data-tab]')?.dataset.group ?? 'sheet';
 
-  // Activate the Foundry tab system for our new tab.
-  // The AE config sheet manages its own Tabs instance — we just need the DOM.
-  $html.find('.sde-effect-tab a.item').on('click', function () {
-    $html.find('.tab[data-tab]').removeClass('active');
-    $html.find('.tab[data-tab="sde-keywords"]').addClass('active');
-    $html.find('nav.sheet-tabs .item').removeClass('active');
-    $(this).addClass('active');
+  // ── Tab nav entry ───────────────────────────────────────────────────────────
+  const link = document.createElement('a');
+  link.dataset.action  = 'tab';
+  link.dataset.group   = group;
+  link.dataset.tab     = 'sde-keywords';
+  link.dataset.tooltip = game.i18n.localize('SDE.Effect.TabLabel');
+  link.innerHTML = `<i class="fas fa-tags" inert></i><span>${game.i18n.localize('SDE.Effect.TabLabel')}</span>`;
+  nav.appendChild(link);
+
+  // ── Tab panel ───────────────────────────────────────────────────────────────
+  const panel = document.createElement('section');
+  panel.className       = 'tab';
+  panel.dataset.group   = group;
+  panel.dataset.tab     = 'sde-keywords';
+  panel.innerHTML       = rendered;
+  body.appendChild(panel);
+
+  // ── Save when the form submits ──────────────────────────────────────────────
+  html.querySelector('form')?.addEventListener('submit', async () => {
+    await _saveFlags(effect, panel);
   });
 
-  // Save on submit — hook into the sheet's update handler.
-  const originalUpdate = sheet._updateObject?.bind(sheet);
-  if (originalUpdate) {
-    sheet._updateObject = async function (event, formData) {
-      await _saveSdeFlags(effect, $html);
-      return originalUpdate(event, formData);
-    };
-  } else {
-    // AppV2 path — listen for the form submit.
-    $html.find('form').on('submit', async () => {
-      await _saveSdeFlags(effect, $html);
-    });
-  }
+  // Also save immediately on any change within our panel so data
+  // isn't lost if the user closes without hitting Save.
+  panel.addEventListener('change', async () => {
+    await _saveFlags(effect, panel);
+  });
 }
 
-async function _saveSdeFlags(effect, $html) {
-  const enabled   = $html.find('[name="sde-enabled"]').prop('checked');
-  const condition = $html.find('[name="sde-condition"]').val().trim();
-  const operator  = $html.find('[name="sde-operator"]').val();
-  const value     = parseFloat($html.find('[name="sde-value"]').val()) || 0;
+async function _saveFlags(effect, panel) {
+  const enabled   = panel.querySelector('[name="sde-enabled"]')?.checked ?? false;
+  const condition = panel.querySelector('[name="sde-condition"]')?.value.trim() ?? '';
+  const operator  = panel.querySelector('[name="sde-operator"]')?.value ?? 'multiply';
+  const value     = parseFloat(panel.querySelector('[name="sde-value"]')?.value) || 0;
 
   await effect.setFlag(MODULE_ID, 'enabled',   enabled);
   await effect.setFlag(MODULE_ID, 'condition',  condition);
