@@ -1,0 +1,116 @@
+/* ============================================================
+   SWADE Damage Effects — stylesheet
+   ============================================================ */
+
+/* ── Item sheet keyword field ─────────────────────────────── */
+
+.sde-keyword-group {
+  border-top: 1px solid var(--color-border-light-tertiary, #ccc);
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.sde-keyword-group label {
+  font-weight: bold;
+  color: var(--color-text-dark-primary, #191813);
+}
+
+.sde-keywords-input {
+  flex: 1;
+  font-family: var(--font-primary, serif);
+}
+
+.sde-keywords-readonly {
+  font-style: italic;
+  color: var(--color-text-dark-secondary, #555);
+}
+
+/* ── Active Effect config tab ─────────────────────────────── */
+
+.sde-effect-tab {
+  padding: 0.5rem;
+}
+
+.sde-effect-tab hr {
+  border-color: var(--color-border-light-tertiary, #ccc);
+  margin: 0.5rem 0;
+}
+
+.sde-preview {
+  background: var(--color-bg-option, #f0ece0);
+  border-radius: 3px;
+  padding: 0.4rem 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.sde-preview-text {
+  font-style: italic;
+  color: var(--color-text-dark-secondary, #555);
+}
+
+.sde-preview-result {
+  font-weight: bold;
+  color: var(--color-text-dark-primary, #191813);
+}
+
+/* ── Chat damage prompt ───────────────────────────────────── */
+
+.sde-damage-prompt {
+  border: 1px solid var(--color-border-light-secondary, #bbb);
+  border-radius: 4px;
+  background: var(--color-bg-option, #f0ece0);
+  padding: 0.4rem 0.6rem;
+  margin-top: 0.5rem;
+  font-size: 0.9em;
+}
+
+.sde-damage-prompt h4 {
+  margin: 0 0 0.3rem;
+  font-size: 1em;
+  border-bottom: 1px solid var(--color-border-light-tertiary, #ccc);
+  padding-bottom: 0.2rem;
+}
+
+.sde-damage-prompt .sde-effect-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.2rem 0;
+}
+
+.sde-damage-prompt .sde-effect-label {
+  flex: 1;
+}
+
+.sde-damage-prompt .sde-original {
+  text-decoration: line-through;
+  color: var(--color-text-dark-secondary, #888);
+}
+
+.sde-damage-prompt .sde-modified {
+  font-weight: bold;
+}
+
+.sde-damage-prompt button {
+  padding: 0.1rem 0.5rem;
+  font-size: 0.85em;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.sde-damage-prompt .sde-apply-btn {
+  background: var(--color-bg-btn, #782e22);
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+}
+
+.sde-damage-prompt .sde-skip-btn {
+  background: transparent;
+  border: 1px solid var(--color-border-dark, #999);
+  border-radius: 3px;
+}
+
+.sde-damage-prompt.sde-resolved {
+  opacity: 0.6;
+}

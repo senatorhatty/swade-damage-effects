@@ -1,0 +1,68 @@
+{{!-- Injected as an extra tab into the ActiveEffect config sheet --}}
+<div class="tab sde-effect-tab" data-tab="sde-keywords">
+
+  {{!-- Enable toggle --}}
+  <div class="form-group">
+    <label>{{localize "SDE.Effect.TabLabel"}}</label>
+    <div class="form-fields">
+      <input type="checkbox" name="sde-enabled" {{#if enabled}}checked{{/if}} />
+      <span class="units">Enable keyword-based damage modifier</span>
+    </div>
+  </div>
+
+  <hr />
+
+  {{!-- Keyword condition --}}
+  <div class="form-group">
+    <label>{{localize "SDE.Effect.Keyword.Label"}}</label>
+    <div class="form-fields">
+      <input
+        type="text"
+        name="sde-condition"
+        value="{{condition}}"
+        placeholder="{{localize 'SDE.Effect.Keyword.Placeholder'}}"
+      />
+    </div>
+    <p class="notes">{{localize "SDE.Effect.Keyword.Hint"}}</p>
+  </div>
+
+  {{!-- Operator --}}
+  <div class="form-group">
+    <label>{{localize "SDE.Effect.Operator.Label"}}</label>
+    <div class="form-fields">
+      <select name="sde-operator">
+        <option value="multiply" {{#eq operator "multiply"}}selected{{/eq}}>
+          {{localize "SDE.Effect.Operator.Multiply"}}
+        </option>
+        <option value="add" {{#eq operator "add"}}selected{{/eq}}>
+          {{localize "SDE.Effect.Operator.Add"}}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  {{!-- Value --}}
+  <div class="form-group">
+    <label>{{localize "SDE.Effect.Value.Label"}}</label>
+    <div class="form-fields">
+      <input
+        type="number"
+        name="sde-value"
+        value="{{value}}"
+        step="0.5"
+        min="-999"
+        max="999"
+      />
+    </div>
+    <p class="notes">{{localize "SDE.Effect.Value.Hint"}}</p>
+  </div>
+
+  {{!-- Live preview --}}
+  <div class="sde-preview form-group">
+    <label>Preview</label>
+    <div class="form-fields sde-preview-text">
+      <em>e.g. 10 damage + fire keyword → <span class="sde-preview-result">—</span></em>
+    </div>
+  </div>
+
+</div>

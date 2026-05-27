@@ -1,0 +1,19 @@
+{{!-- Injected into item sheets for weapon / power / gear types --}}
+<div class="form-group sde-keyword-group">
+  <label>{{localize "SDE.Keywords.Label"}}</label>
+  <div class="form-fields">
+    {{#if editable}}
+      <input
+        type="text"
+        class="sde-keywords-input"
+        value="{{keywords}}"
+        placeholder="{{localize 'SDE.Keywords.Placeholder'}}"
+      />
+    {{else}}
+      <span class="sde-keywords-readonly">
+        {{#if keywords}}{{keywords}}{{else}}—{{/if}}
+      </span>
+    {{/if}}
+  </div>
+  <p class="notes">{{localize "SDE.Keywords.Hint"}}</p>
+</div>

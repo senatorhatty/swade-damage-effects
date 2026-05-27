@@ -1,0 +1,40 @@
+{
+  "id": "swade-damage-effects",
+  "title": "SWADE Damage Effects",
+  "description": "Adds keyword-based damage resistances, vulnerabilities, and immunities to the SWADE system. Tag weapons and powers with keywords; give actors active effects that modify incoming damage when those keywords match.",
+  "version": "0.1.0",
+  "authors": [
+    {
+      "name": "senatorhatty",
+      "url": "https://github.com/senatorhatty"
+    }
+  ],
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13.341"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "swade",
+        "type": "system",
+        "compatibility": {
+          "minimum": "5.0.0",
+          "verified": "5.2.6"
+        }
+      }
+    ]
+  },
+  "esmodules": ["scripts/module.js"],
+  "styles": ["styles/swade-damage-effects.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "url": "https://github.com/senatorhatty/swade-damage-effects",
+  "bugs": "https://github.com/senatorhatty/swade-damage-effects/issues",
+  "readme": "https://github.com/senatorhatty/swade-damage-effects/blob/main/README.md"
+}

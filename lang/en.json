@@ -1,0 +1,57 @@
+{
+  "SDE": {
+    "ModuleTitle": "SWADE Damage Effects",
+
+    "Keywords": {
+      "Label": "Damage Keywords",
+      "Placeholder": "e.g. fire, magical",
+      "Hint": "Comma-separated keywords attached to damage from this item. Used by damage effects on targets to determine resistances and vulnerabilities."
+    },
+
+    "Effect": {
+      "TabLabel": "Damage Keywords",
+      "Keyword": {
+        "Label": "Keyword(s)",
+        "Placeholder": "e.g. fire | cold  or  !silver",
+        "Hint": "Space-separate keywords that must ALL be present, or use | for OR logic. Prefix with ! to match when the keyword is absent. Leave blank to match any damage."
+      },
+      "Operator": {
+        "Label": "Modifier Type",
+        "Multiply": "× Multiply",
+        "Add": "+ Add / Subtract"
+      },
+      "Value": {
+        "Label": "Value",
+        "Hint": "For ×: use 0 = immune, 0.5 = half, 2 = double. For +: use positive or negative number."
+      },
+      "Priority": {
+        "Label": "Priority",
+        "Hint": "Higher number = evaluated first. Normally leave at 0; raise only if you need a specific effect to win over the default least-damage rule."
+      }
+    },
+
+    "Settings": {
+      "PromptMode": {
+        "Name": "Damage Prompt Mode",
+        "Hint": "When a damage roll matches a keyword effect, how should the GM be notified?",
+        "Auto": "Automatic — prompt appears immediately on the chat card",
+        "Manual": "Manual — a button appears on the chat card; GM clicks to evaluate"
+      },
+      "PlayerVisible": {
+        "Name": "Show Prompts to Players",
+        "Hint": "If enabled, damage effect prompts are visible to players as well as the GM. If disabled, only the GM sees them."
+      }
+    },
+
+    "Prompt": {
+      "Title": "Damage Effects",
+      "NoTarget": "No targeted tokens — select or target a token first.",
+      "Applying": "Applying to {name}",
+      "EffectRow": "{label}: {original} → {modified}",
+      "Apply": "Apply",
+      "Skip": "Skip",
+      "Applied": "Applied ({label}): damage {original} → {modified}",
+      "Skipped": "Skipped ({label}) — original damage stands."
+    }
+  }
+}
