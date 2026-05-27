@@ -33,18 +33,17 @@ async function _onRenderItemSheet(sheet, html, _data) {
   // Normalise html to a jQuery object — AppV2 passes a plain HTMLElement.
   const $html = (html instanceof jQuery) ? html : $(html);
 
-  // Try injection points in order of preference:
-  //   1. The "description" tab (most SWADE sheets have one)
-  //   2. The "details" tab
-  //   3. The sheet body
-  //   4. The form itself (last resort)
+  // Try injection points in order of preference.
+  // SWADE's Properties tab uses data-tab="properties" — that's our primary target.
+  // Fallbacks handle other item types or future sheet changes.
   const $target =
-    $html.find('.tab[data-tab="description"]').first()  ||
-    $html.find('.tab[data-tab="details"]').first()       ||
-    $html.find('.sheet-body').first()                    ||
+    $html.find('[data-tab="properties"]').first()   ||
+    $html.find('[data-tab="description"]').first()  ||
+    $html.find('[data-tab="details"]').first()      ||
+    $html.find('.sheet-body').first()               ||
     $html.find('form').first();
 
-  $target.prepend(rendered);
+  $target.append(rendered);
 
   // Wire up save-on-change.  We call setFlag directly rather than relying on
   // Foundry's form submission so the injected field is always captured.
