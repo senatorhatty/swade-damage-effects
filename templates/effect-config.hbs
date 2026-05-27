@@ -1,5 +1,8 @@
-{{!-- Injected as an extra tab into the ActiveEffect config sheet --}}
-<div class="tab sde-effect-tab" data-tab="sde-keywords">
+{{!-- Injected as an extra tab into the ActiveEffect config sheet.
+     NOTE: do NOT add class="tab" here — that class is set on the <section>
+     wrapper created by effect-config.js.  Adding it here would cause
+     Foundry's .tab { display:none } rule to hide this content.           --}}
+<div class="sde-effect-tab">
 
   {{!-- Enable toggle --}}
   <div class="form-group">
