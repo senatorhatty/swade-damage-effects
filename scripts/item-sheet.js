@@ -1,15 +1,17 @@
 /**
  * item-sheet.js
- * Injects the Damage Keywords field into SWADE item sheets.
+ * Adds a "Keywords" tab to SWADE item sheets.
  *
- * We store keywords in item flags so we never touch the system's data schema.
- * Flag path: item.flags["swade-damage-effects"].keywords  (plain string)
+ * We inject a full new tab rather than trying to append to an existing one,
+ * which avoids fragile selector guessing and gives the field its own clean space.
+ *
+ * Keywords are stored in item flags so we never touch the system's data schema:
+ *   item.flags["swade-damage-effects"].keywords  (plain comma-separated string)
  */
 
 const MODULE_ID = 'swade-damage-effects';
 
-// Item types that deal damage and should show the keyword field.
-// 'gear' is included because some settings use gear as improvised weapons.
+// Item types that deal damage and should carry keyword tags.
 const KEYWORD_TYPES = new Set(['weapon', 'power', 'gear', 'shield', 'consumable']);
 
 export function initItemSheet() {
@@ -17,36 +19,76 @@ export function initItemSheet() {
 }
 
 async function _onRenderItemSheet(sheet, html, _data) {
-  // sheet.document is AppV2; sheet.item is AppV1 legacy — handle both.
+  // Support both AppV2 (sheet.document) and AppV1 (sheet.item).
   const item = sheet.document ?? sheet.item;
   if (!item) return;
   if (!KEYWORD_TYPES.has(item.type)) return;
 
   const keywords = item.getFlag(MODULE_ID, 'keywords') ?? '';
-  const editable = sheet.isEditable;
+  const editable  = sheet.isEditable;
 
   const rendered = await renderTemplate(
     `modules/${MODULE_ID}/templates/partials/keyword-input.hbs`,
     { keywords, editable }
   );
 
-  // Normalise html to a jQuery object — AppV2 passes a plain HTMLElement.
+  // Normalise to jQuery — AppV2 passes a plain HTMLElement.
   const $html = (html instanceof jQuery) ? html : $(html);
 
-  // Try injection points in order of preference.
-  // SWADE's Properties tab uses data-tab="properties" — that's our primary target.
-  // Fallbacks handle other item types or future sheet changes.
-  const $target =
-    $html.find('[data-tab="properties"]').first()   ||
-    $html.find('[data-tab="description"]').first()  ||
-    $html.find('[data-tab="details"]').first()      ||
-    $html.find('.sheet-body').first()               ||
-    $html.find('form').first();
+  // ── 1. Find the tab nav and read the data-group from existing tabs ──────
+  const $nav = $html.find('nav.sheet-tabs, nav.tabs').first();
+  if (!$nav.length) {
+    // No tab nav found — fall back to appending directly to the form.
+    $html.find('form').append(rendered);
+    _wireChangeHandler($html, item);
+    return;
+  }
 
-  $target.append(rendered);
+  // Get the group name from the first existing tab anchor.
+  const group = $nav.find('[data-tab]').first().attr('data-group') ?? 'primary';
 
-  // Wire up save-on-change.  We call setFlag directly rather than relying on
-  // Foundry's form submission so the injected field is always captured.
+  // ── 2. Inject the tab nav entry ─────────────────────────────────────────
+  $nav.append(`
+    <a data-action="tab"
+       data-group="${group}"
+       data-tab="sde-keywords"
+       data-tooltip="${game.i18n.localize('SDE.Keywords.Label')}">
+      <i class="fas fa-tags" inert></i>
+      <span>${game.i18n.localize('SDE.Keywords.Label')}</span>
+    </a>
+  `);
+
+  // ── 3. Inject the tab panel ─────────────────────────────────────────────
+  const $body = $html.find('.sheet-body').first();
+  $body.append(`
+    <section class="tab sde-keywords-tab"
+             data-group="${group}"
+             data-tab="sde-keywords">
+      ${rendered}
+    </section>
+  `);
+
+  // ── 4. Wire up tab switching ────────────────────────────────────────────
+  // Foundry's Tabs instance was already initialised before we injected,
+  // so we handle clicks on our tab manually.
+  $nav.find('[data-tab="sde-keywords"]').on('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Deactivate every tab in this group.
+    $nav.find(`[data-group="${group}"]`).removeClass('active');
+    $body.find(`.tab[data-group="${group}"]`).removeClass('active');
+
+    // Activate ours.
+    $(this).addClass('active');
+    $body.find('.tab[data-tab="sde-keywords"]').addClass('active');
+  });
+
+  // ── 5. Save on change ───────────────────────────────────────────────────
+  _wireChangeHandler($html, item);
+}
+
+function _wireChangeHandler($html, item) {
   $html.find('.sde-keywords-input').on('change', async (event) => {
     const value = event.currentTarget.value.trim();
     await item.setFlag(MODULE_ID, 'keywords', value);
