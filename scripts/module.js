@@ -8,6 +8,7 @@
 import { registerSettings }  from './settings.js';
 import { initItemSheet }      from './item-sheet.js';
 import { initEffectConfig }   from './effect-config.js';
+import { initDamageIntercept } from './damage-intercept.js';
 
 const MODULE_ID = 'swade-damage-effects';
 
@@ -17,6 +18,7 @@ Hooks.once('init', () => {
   registerSettings();
   initItemSheet();
   initEffectConfig();
+  initDamageIntercept();
 
   // Pre-load all our Handlebars templates so they're cached and ready.
   // loadTemplates() is deprecated in v14; use the namespaced version.

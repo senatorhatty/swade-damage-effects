@@ -23,6 +23,12 @@
           "verified": "6.0.2"
         }
       }
+    ],
+    "requires": [
+      {
+        "id": "swade-targeted-damage",
+        "type": "module"
+      }
     ]
   },
   "esmodules": ["scripts/module.js"],
