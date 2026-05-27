@@ -21,8 +21,18 @@ export function initItemSheet() {
 async function _onRenderItemSheet(sheet, html, _data) {
   // Support both AppV2 (sheet.document) and AppV1 (sheet.item).
   const item = sheet.document ?? sheet.item;
+
+  console.log(`${MODULE_ID} | renderItemSheet fired`, {
+    sheetClass: sheet.constructor.name,
+    itemType: item?.type,
+    htmlType: html?.constructor?.name,
+  });
+
   if (!item) return;
-  if (!KEYWORD_TYPES.has(item.type)) return;
+  if (!KEYWORD_TYPES.has(item.type)) {
+    console.log(`${MODULE_ID} | skipping item type: ${item.type}`);
+    return;
+  }
 
   const keywords = item.getFlag(MODULE_ID, 'keywords') ?? '';
   const editable  = sheet.isEditable;
@@ -37,8 +47,12 @@ async function _onRenderItemSheet(sheet, html, _data) {
 
   // ── 1. Find the tab nav and read the data-group from existing tabs ──────
   const $nav = $html.find('nav.sheet-tabs, nav.tabs').first();
+
+  console.log(`${MODULE_ID} | nav found:`, $nav.length, '| html outerHTML snippet:', $html[0]?.outerHTML?.slice(0, 200));
+
   if (!$nav.length) {
     // No tab nav found — fall back to appending directly to the form.
+    console.log(`${MODULE_ID} | no nav — falling back to form append`);
     $html.find('form').append(rendered);
     _wireChangeHandler($html, item);
     return;
