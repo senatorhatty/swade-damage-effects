@@ -46,12 +46,25 @@
     "Prompt": {
       "Title": "Damage Effects",
       "NoTarget": "No targeted tokens — select or target a token first.",
-      "Applying": "Applying to {name}",
+      "Applying": "Damage to: {name}",
+      "Effect": "Effect",
+      "Original": "Original",
+      "Modified": "Modified",
+      "ApplyModified": "Apply Modified",
+      "SoakModified": "Soak Modified",
+      "ApplyOriginal": "Apply Original",
       "EffectRow": "{label}: {original} → {modified}",
       "Apply": "Apply",
       "Skip": "Skip",
       "Applied": "Applied ({label}): damage {original} → {modified}",
       "Skipped": "Skipped ({label}) — original damage stands."
+    },
+
+    "Result": {
+      "NoDamage": "no damage",
+      "Shaken": "Shaken",
+      "OneWound": "Shaken + 1 Wound",
+      "Wounds": "Shaken + {count} Wounds"
     }
   }
 }

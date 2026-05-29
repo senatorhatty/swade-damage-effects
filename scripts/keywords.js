@@ -113,7 +113,10 @@ export function resolveBestEffect(damage, weaponKeywords, actor) {
   const MODULE_ID = 'swade-damage-effects';
   let best = null;
 
-  for (const effect of actor.effects) {
+  // allApplicableEffects() yields both actor-own effects AND item-transferred
+  // effects (transfer:true on items). In Foundry v14, actor.effects only
+  // contains the actor's own embedded documents — item effects are not cloned.
+  for (const effect of actor.allApplicableEffects()) {
     if (effect.disabled) continue;
 
     const flags = effect.flags?.[MODULE_ID];

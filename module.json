@@ -24,10 +24,11 @@
         }
       }
     ],
-    "requires": [
+    "recommends": [
       {
-        "id": "swade-targeted-damage",
-        "type": "module"
+        "id": "swade-tools",
+        "type": "module",
+        "reason": "Damage keyword intercept is only active when swade-tools is installed and enabled."
       }
     ]
   },
